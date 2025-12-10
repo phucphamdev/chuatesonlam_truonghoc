@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "School Center Auto Fill Enhanced",
+  "version": "2.0",
+  "description": "Auto fill thực đơn nhanh với mã viết tắt - phiên bản nâng cao",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://www.sc.edu.vn/*"],
+      "js": ["content.js"],
+      "css": ["style.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
