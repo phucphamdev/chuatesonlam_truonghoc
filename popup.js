@@ -1,37 +1,63 @@
-// Hàm gửi tin nhắn xuống trang web
-function sendSelectRequest(value) {
-    const statusDiv = document.getElementById('status');
-    statusDiv.textContent = "Đang xử lý...";
-    statusDiv.style.color = "blue";
+// Xử lý cập nhật database từ Excel
+document.getElementById('updateBtn').addEventListener('click', () => {
+  const excelData = document.getElementById('excelData').value.trim();
+  const successMsg = document.getElementById('successMsg');
+  
+  if (!excelData) {
+    alert('Vui lòng paste data từ Excel!');
+    return;
+  }
 
-    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-        // Gửi lệnh xuống content.js
-        chrome.tabs.sendMessage(tabs[0].id, {
-            action: "select_type",
-            type: value
-        }, (response) => {
-            // Nhận kết quả trả về
-            if (chrome.runtime.lastError) {
-                statusDiv.textContent = "Lỗi: Hãy Refresh trang web!";
-                statusDiv.style.color = "red";
-            } else if (response) {
-                statusDiv.textContent = response.msg;
-                statusDiv.style.color = response.status === "Thành công" ? "green" : "red";
-            }
-        });
+  // Convert Excel data thành foodDatabase
+  const lines = excelData.split('\n');
+  const newDatabase = {};
+
+  lines.forEach(line => {
+    const parts = line.split('\t');
+    
+    // Format: Mã | Tên | Gram | Hệ số thải bỏ | Giá tiền
+    if (parts.length >= 5) {
+      const code = parts[0].trim();
+      const name = parts[1].trim();
+      const gram = parseFloat(parts[2].trim());
+      const price = parseInt(parts[4].trim());
+
+      if (code && name && !isNaN(gram) && !isNaN(price)) {
+        newDatabase[code] = {
+          fullName: name,
+          defaultGram: gram,
+          price: price,
+          code: code
+        };
+      }
+    }
+  });
+
+  if (Object.keys(newDatabase).length === 0) {
+    alert('Không thể convert data! Vui lòng kiểm tra format.');
+    return;
+  }
+
+  console.log('📊 Database mới:', newDatabase);
+  console.log(`✓ Đã convert ${Object.keys(newDatabase).length} món ăn`);
+
+  // Gửi database mới xuống content script
+  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+    chrome.tabs.sendMessage(tabs[0].id, {
+      action: 'update_database',
+      database: newDatabase
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        alert('Lỗi: Vui lòng mở trang School Center và thử lại!');
+      } else {
+        // Hiển thị thông báo thành công
+        successMsg.style.display = 'block';
+        setTimeout(() => {
+          successMsg.style.display = 'none';
+        }, 3000);
+        
+        console.log('✓ Đã cập nhật database thành công!');
+      }
     });
-}
-
-// Xử lý khi bấm nút "Tìm & Chọn" (nhập tay)
-document.getElementById('btnSelect').addEventListener('click', () => {
-    const val = document.getElementById('typeInput').value;
-    if(val) sendSelectRequest(val);
-});
-
-// Xử lý các nút bấm nhanh (Bữa sáng, trưa...)
-document.querySelectorAll('.quick-select').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const val = e.target.getAttribute('data-value');
-        sendSelectRequest(val);
-    });
+  });
 });

@@ -1,0 +1,64 @@
+═══════════════════════════════════════════════════════════
+  HƯỚNG DẪN SỬ DỤNG - SCHOOL CENTER AUTO FILL ENHANCED
+═══════════════════════════════════════════════════════════
+
+📦 CÀI ĐẶT:
+-----------
+1. Mở Chrome → chrome://extensions/
+2. Bật "Developer mode" (góc trên phải)
+3. Click "Load unpacked"
+4. Chọn thư mục chứa extension này
+5. Reload trang www.sc.edu.vn
+
+🎯 SỬ DỤNG:
+-----------
+CÁCH 1: THÊM TẤT CẢ (KHUYÊN DÙNG)
+  1. Vào trang tạo thực đơn
+  2. Click nút "⚡ THÊM TẤT CẢ THỰC PHẨM"
+  3. Extension tự động thêm HẾT!
+  4. Chờ hoàn thành (có progress bar)
+
+CÁCH 2: THÊM TỪNG MÓN
+  1. Nhập mã vào ô Auto Fill
+     Ví dụ: MUOP, TOMDONG, GAOTE...
+  2. Click 🔍 hoặc Enter
+  3. Kiểm tra số gram
+  4. Click "Thêm món đã chọn"
+
+✨ TÍNH NĂNG:
+-------------
+⚡ NÚT "THÊM TẤT CẢ" - Tự động thêm hết data
+✓ Không cần confirm - Tự động thêm luôn
+✓ Thêm từng món một, ổn định
+✓ Hiển thị progress realtime
+✓ Console log chi tiết để debug
+✓ Delay 2s giữa mỗi món
+✓ Mỗi menu khác nhau chỉ cần đổi data
+
+📝 CẬP NHẬT DATA CHO MENU MỚI:
+-------------------------------
+1. Mở file: foodData.js
+2. XÓA HẾT data cũ (giữ lại const foodDatabase = {})
+3. PASTE data mới theo format:
+   'MÃ': { fullName: 'Tên', defaultGram: 100, code: 'MÃ' },
+4. Lưu file
+5. Reload extension (chrome://extensions/)
+6. Reload trang web
+7. Click "THÊM TẤT CẢ" → XONG!
+
+💡 MẸO: Gửi data Excel cho dev, sẽ convert thành code!
+
+🐛 DEBUG:
+---------
+Nhấn F12 → Console để xem:
+- 🔍 Extension đang chạy...
+- 📝 [1/5] Thêm: Mướp (32.4g)
+- ✓ Thành công!
+
+📞 LƯU Ý:
+---------
+- Mỗi menu khác nhau → Cập nhật foodData.js
+- Thêm tối đa 20 món/lần để tránh lag
+- Nếu lỗi, reload trang và thử lại
+
+═══════════════════════════════════════════════════════════

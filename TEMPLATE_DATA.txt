@@ -1,0 +1,43 @@
+═══════════════════════════════════════════════════════════
+  TEMPLATE THÊM DATA MỚI VÀO foodData.js
+═══════════════════════════════════════════════════════════
+
+📋 FORMAT:
+----------
+'MÃ_VIẾT_TẮT': { fullName: 'Tên đầy đủ', defaultGram: 100, code: 'MÃ_VIẾT_TẮT' },
+
+📝 VÍ DỤ:
+---------
+'GAOTE': { fullName: 'Gạo thơm', defaultGram: 68, code: 'GAOTE' },
+'MUOP': { fullName: 'Mướp', defaultGram: 32.4, code: 'MUOP' },
+'TOMDONG': { fullName: 'Tôm bạc trung', defaultGram: 30.8, code: 'TOMDONG' },
+
+🔧 CÁCH THÊM:
+-------------
+1. Mở file: foodData.js
+2. Tìm dòng cuối cùng (trước dấu };)
+3. Thêm dòng mới theo format trên
+4. Lưu file
+5. Reload extension (chrome://extensions/)
+6. Reload trang web
+
+⚠️ LƯU Ý:
+----------
+- Mã viết tắt: VIẾT HOA, không dấu
+- Tên đầy đủ: Viết thường, có dấu
+- defaultGram: Số thập phân (dùng dấu chấm)
+- Nhớ có dấu phẩy ở cuối mỗi dòng!
+
+═══════════════════════════════════════════════════════════
+
+📊 COPY PASTE TỪ EXCEL:
+-----------------------
+Nếu bạn có data từ Excel, gửi cho tôi theo format:
+
+Mã viết tắt | Tên đầy đủ | Số lượng gram
+GAOTE       | Gạo thơm   | 68
+MUOP        | Mướp       | 32.4
+
+Tôi sẽ convert thành code cho bạn!
+
+═══════════════════════════════════════════════════════════

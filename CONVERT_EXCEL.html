@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Convert Excel to Code</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+    .input-section {
+      margin-bottom: 30px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+      font-size: 14px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      resize: vertical;
+      transition: all 0.3s;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+    .btn:active {
+      transform: translateY(0);
+    }
+    .output-section {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid #f0f0f0;
+    }
+    .code-output {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 400px;
+      overflow-y: auto;
+      border: 2px solid #e0e0e0;
+    }
+    .copy-btn {
+      margin-top: 15px;
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+    .example {
+      background: #fff3cd;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border-left: 4px solid #ffc107;
+    }
+    .example-title {
+      font-weight: 700;
+      color: #856404;
+      margin-bottom: 10px;
+    }
+    .example-content {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 Convert Excel to Code</h1>
+    <p class="subtitle">Công cụ chuyển đổi data Excel thành code cho foodData.js</p>
+
+    <div class="example">
+      <div class="example-title">📋 Ví dụ format Excel (copy từ Excel paste vào):</div>
+      <div class="example-content">GAOTE	Gạo thơm	65.38	0	21000
+DAUTHUCVAT	Dầu thực vật	5.77	0	57000
+DUONG	Đường	7.69	0	33000
+TOMDONG	Tôm bạc trung	33.85	45	177000</div>
+    </div>
+
+    <div class="input-section">
+      <label for="excelInput">Paste data từ Excel (5 cột: Mã | Tên | Gram | Hệ số | Giá):</label>
+      <textarea id="excelInput" placeholder="Paste data từ Excel vào đây...&#10;Format: MÃ [TAB] Tên [TAB] Gram [TAB] Hệ số thải bỏ [TAB] Giá tiền&#10;&#10;Ví dụ:&#10;GAOTE	Gạo thơm	65.38	0	21000&#10;TOMDONG	Tôm bạc trung	33.85	45	177000"></textarea>
+    </div>
+
+    <button class="btn" onclick="convert()">🔄 Convert</button>
+
+    <div class="output-section" id="outputSection" style="display: none;">
+      <label>✅ Code đã convert (Copy và paste vào foodData.js):</label>
+      <div class="code-output" id="codeOutput"></div>
+      <button class="btn copy-btn" onclick="copyCode()">📋 Copy Code</button>
+    </div>
+  </div>
+
+  <script>
+    function convert() {
+      const input = document.getElementById('excelInput').value.trim();
+      
+      if (!input) {
+        alert('Vui lòng paste data từ Excel!');
+        return;
+      }
+
+      const lines = input.split('\n');
+      let code = 'const foodDatabase = {\n';
+
+      lines.forEach((line, index) => {
+        const parts = line.split('\t');
+        
+        // Format: Mã | Tên | Gram | Hệ số thải bỏ | Giá tiền
+        if (parts.length >= 5) {
+          const mã = parts[0].trim();
+          const tên = parts[1].trim();
+          const gram = parseFloat(parts[2].trim());
+          const giá = parseInt(parts[4].trim());
+
+          code += `  '${mã}': { fullName: '${tên}', defaultGram: ${gram}, price: ${giá}, code: '${mã}' }`;
+          
+          if (index < lines.length - 1) {
+            code += ',';
+          }
+          
+          code += '\n';
+        }
+        // Format cũ: Mã | Tên | Gram (không có giá)
+        else if (parts.length >= 3) {
+          const mã = parts[0].trim();
+          const tên = parts[1].trim();
+          const gram = parseFloat(parts[2].trim());
+
+          code += `  '${mã}': { fullName: '${tên}', defaultGram: ${gram}, code: '${mã}' }`;
+          
+          if (index < lines.length - 1) {
+            code += ',';
+          }
+          
+          code += '\n';
+        }
+      });
+
+      code += '};';
+
+      document.getElementById('codeOutput').textContent = code;
+      document.getElementById('outputSection').style.display = 'block';
+      
+      // Scroll to output
+      document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyCode() {
+      const code = document.getElementById('codeOutput').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✅ Đã copy!';
+        btn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+        
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

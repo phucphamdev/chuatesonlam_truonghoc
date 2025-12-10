@@ -144,21 +144,38 @@
 
 .suggestion-item {
   background: white;
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 6px;
   font-size: 13px;
-  font-weight: 600;
-  color: #667eea;
   cursor: pointer;
   transition: all 0.2s;
   border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.suggestion-item strong {
+  color: #667eea;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.suggestion-item small {
+  color: #999;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .suggestion-item:hover {
   background: #667eea;
-  color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.suggestion-item:hover strong,
+.suggestion-item:hover small {
+  color: white;
 }
 
 /* Results Container */
@@ -436,6 +453,82 @@
   transform: scale(0.95);
 }
 
+/* Auto Add All */
+.auto-add-all {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.add-all-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
+  border: none;
+  color: #333;
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.add-all-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+}
+
+.add-all-btn:hover::before {
+  left: 100%;
+}
+
+.add-all-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+}
+
+.add-all-btn:active {
+  transform: translateY(-1px);
+}
+
+.add-all-btn .btn-icon {
+  font-size: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.add-all-btn .btn-text {
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+
+.add-all-btn .btn-count {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
 /* Success Notification */
 .success-notification {
   position: fixed;
@@ -460,6 +553,30 @@
   opacity: 1;
 }
 
+/* Progress Notification */
+.progress-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(245, 87, 108, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 9999999;
+  transform: translateX(400px);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.progress-notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
 .notification-icon {
   width: 32px;
   height: 32px;
@@ -470,6 +587,12 @@
   justify-content: center;
   font-size: 18px;
   font-weight: bold;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .notification-message {

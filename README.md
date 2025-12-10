@@ -40,15 +40,29 @@ Extension có giao diện hiện đại với:
 
 ## 📝 Danh sách mã viết tắt
 
-| Mã | Món ăn |
-|----|--------|
-| GẠO | Cơm trắng, Cháo gạo, Xôi gạo nếp |
-| TPT | Thịt heo rim, Thịt heo luộc, Thịt heo xào |
-| TÔM | Tôm rim thịt, Canh tôm, Tôm luộc |
-| NUI | Nui rau củ thịt heo, Nui xào |
-| SỮA | Sữa chua Probi, Sữa tươi |
-| MƯỚP | Canh mướp, nấm tôm, thịt |
-| SÚP | Súp óc heo |
+| Mã | Tên đầy đủ | Gram mặc định |
+|----|------------|---------------|
+| GAOTE | Gạo thơm | 68 |
+| DAUTHUCVAT | Dầu thực vật | 4 |
+| DUONG | Đường | 12 |
+| MUOI | Muối | 2 |
+| NUOCMAM | Nước mắm | 2 |
+| HANHLA | Hành lá | 3.33 |
+| RAUNGO | Rau ngò | 3.54 |
+| DAUCAKIDDY | Dầu cá | 6 |
+| MUOP | Mướp | 32.4 |
+| TOMDONG | Tôm bạc trung | 30.8 |
+| THITLONNAC_VDD | Thịt nạc đùi | 4.08 |
+| THITNACDAM | Thịt nạc dăm | 28 |
+| HANHCUTUOI | Hành củ tươi | 3.04 |
+| TOI | Tỏi | 4 |
+| BOTNANG | Bột năng Tài Ký | 8 |
+| CAROT | Cà rốt | 10.2 |
+| NAMBAONGU | Nấm bào ngư | 4.17 |
+| BAPMYHAT | Bắp Mỹ hạt | 6.6 |
+| RAUTHOM_VDD | Rau thơm | 3.13 |
+| XUONGHEO | Xương heo | 8 |
+| OCHEO | Óc heo | 11.04 |
 
 ## 🔧 Tùy chỉnh
 

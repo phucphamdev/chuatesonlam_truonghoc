@@ -1,35 +1,11 @@
-// Database mã viết tắt và món ăn
-const foodDatabase = {
-  'GẠO': [
-    { name: 'Cơm trắng', defaultGram: 100 },
-    { name: 'Cháo gạo', defaultGram: 150 },
-    { name: 'Xôi gạo nếp', defaultGram: 80 }
-  ],
-  'TPT': [
-    { name: 'Thịt heo rim', defaultGram: 50 },
-    { name: 'Thịt heo luộc', defaultGram: 60 },
-    { name: 'Thịt heo xào', defaultGram: 55 }
-  ],
-  'TÔM': [
-    { name: 'Tôm rim thịt', defaultGram: 40 },
-    { name: 'Canh tôm', defaultGram: 30 },
-    { name: 'Tôm luộc', defaultGram: 35 }
-  ],
-  'NUI': [
-    { name: 'Nui rau củ thịt heo', defaultGram: 120 },
-    { name: 'Nui xào', defaultGram: 100 }
-  ],
-  'SỮA': [
-    { name: 'Sữa chua Probi', defaultGram: 100 },
-    { name: 'Sữa tươi', defaultGram: 200 }
-  ],
-  'MƯỚP': [
-    { name: 'Canh mướp, nấm tôm, thịt', defaultGram: 150 }
-  ],
-  'SÚP': [
-    { name: 'Súp óc heo', defaultGram: 150 }
-  ]
-};
+// foodDatabase được load từ foodData.js
+
+// Tạo reverse lookup để tìm theo tên đầy đủ
+const foodByFullName = {};
+Object.keys(foodDatabase).forEach(code => {
+  const food = foodDatabase[code];
+  foodByFullName[food.fullName.toLowerCase()] = food;
+});
 
 // Tạo UI Auto Fill nâng cao
 function createEnhancedAutoFillUI() {
@@ -78,31 +54,35 @@ function createEnhancedAutoFillUI() {
         <div class="quick-codes-title">Mã thường dùng:</div>
         <div class="quick-codes-list"></div>
       </div>
+
+      <div class="auto-add-all">
+        <button class="add-all-btn">
+          <span class="btn-icon">⚡</span>
+          <span class="btn-text">ĐỒNG BỘ THỰC PHẨM</span>
+          <span class="btn-count">(${Object.keys(foodDatabase).length} món)</span>
+        </button>
+        <div class="sync-info">Thêm mới / Cập nhật / Xóa tự động</div>
+      </div>
     </div>
   `;
 
   document.body.appendChild(container);
   
-  // Render quick codes
   renderQuickCodes();
-  
-  // Event listeners
   setupEventListeners(container);
   
   return container;
 }
 
-// Render các mã nhanh
 function renderQuickCodes() {
   const quickCodesList = document.querySelector('.quick-codes-list');
-  const codes = Object.keys(foodDatabase);
+  const codes = Object.keys(foodDatabase).slice(0, 12);
   
   quickCodesList.innerHTML = codes.map(code => 
-    `<button class="quick-code-btn" data-code="${code}">${code}</button>`
+    `<button class="quick-code-btn" data-code="${code}" title="${foodDatabase[code].fullName}">${code}</button>`
   ).join('');
 }
 
-// Setup event listeners
 function setupEventListeners(container) {
   const input = container.querySelector('.food-code-input');
   const searchBtn = container.querySelector('.search-btn');
@@ -111,34 +91,24 @@ function setupEventListeners(container) {
   const addSelectedBtn = container.querySelector('.add-selected-btn');
   const quickCodesList = container.querySelector('.quick-codes-list');
 
-  // Input change - show suggestions
   input.addEventListener('input', (e) => {
     const value = e.target.value.toUpperCase().trim();
     showSuggestions(value);
   });
 
-  // Enter key
   input.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       searchFood();
     }
   });
 
-  // Search button
   searchBtn.addEventListener('click', searchFood);
-
-  // Close button
   closeBtn.addEventListener('click', () => {
     container.style.display = 'none';
   });
-
-  // Select all
   selectAllBtn.addEventListener('click', toggleSelectAll);
-
-  // Add selected
   addSelectedBtn.addEventListener('click', addSelectedDishes);
 
-  // Quick codes
   quickCodesList.addEventListener('click', (e) => {
     if (e.target.classList.contains('quick-code-btn')) {
       const code = e.target.dataset.code;
@@ -146,29 +116,36 @@ function setupEventListeners(container) {
       searchFood();
     }
   });
+
+  const addAllBtn = container.querySelector('.add-all-btn');
+  addAllBtn.addEventListener('click', syncAllFoods);
 }
 
-// Show suggestions
 function showSuggestions(value) {
   const suggestionsContainer = document.querySelector('.suggestions-list');
   const suggestionsItems = document.querySelector('.suggestions-items');
   
-  if (!value) {
+  if (!value || value.length < 2) {
     suggestionsContainer.style.display = 'none';
     return;
   }
 
-  const matches = Object.keys(foodDatabase).filter(code => 
-    code.includes(value)
-  );
+  const matches = Object.keys(foodDatabase).filter(code => {
+    const food = foodDatabase[code];
+    return code.includes(value) || 
+           food.fullName.toLowerCase().includes(value.toLowerCase());
+  }).slice(0, 8);
 
   if (matches.length > 0) {
-    suggestionsItems.innerHTML = matches.map(code => 
-      `<div class="suggestion-item" data-code="${code}">${code}</div>`
-    ).join('');
+    suggestionsItems.innerHTML = matches.map(code => {
+      const food = foodDatabase[code];
+      return `<div class="suggestion-item" data-code="${code}" title="${food.fullName}">
+        <strong>${code}</strong>
+        <small>${food.fullName}</small>
+      </div>`;
+    }).join('');
     suggestionsContainer.style.display = 'block';
 
-    // Click suggestion
     suggestionsItems.querySelectorAll('.suggestion-item').forEach(item => {
       item.addEventListener('click', () => {
         document.querySelector('.food-code-input').value = item.dataset.code;
@@ -180,7 +157,6 @@ function showSuggestions(value) {
   }
 }
 
-// Search food
 function searchFood() {
   const input = document.querySelector('.food-code-input');
   const code = input.value.toUpperCase().trim();
@@ -190,53 +166,67 @@ function searchFood() {
 
   suggestionsContainer.style.display = 'none';
 
-  if (!code || !foodDatabase[code]) {
-    alert('Không tìm thấy mã "' + code + '"!\n\nCác mã có sẵn: ' + Object.keys(foodDatabase).join(', '));
+  if (!code) {
+    alert('Vui lòng nhập mã thực phẩm!');
     return;
   }
 
-  const dishes = foodDatabase[code];
-  
-  resultsList.innerHTML = dishes.map((dish, index) => `
-    <div class="result-item">
-      <div class="result-checkbox">
-        <input 
-          type="checkbox" 
-          id="dish-${index}" 
-          class="dish-checkbox"
-          data-dish='${JSON.stringify(dish)}'
-        />
-        <label for="dish-${index}" class="checkbox-label">
-          <span class="checkmark">✓</span>
-        </label>
-      </div>
-      <div class="result-info">
-        <div class="result-name">${dish.name}</div>
-        <div class="result-gram-input">
+  const matchedFoods = Object.keys(foodDatabase).filter(key => 
+    key.includes(code) || foodDatabase[key].fullName.toLowerCase().includes(code.toLowerCase())
+  );
+
+  if (matchedFoods.length === 0) {
+    alert('Không tìm thấy mã "' + code + '"!\n\nVí dụ: GAOTE, MUOP, TOMDONG, THITNACDAM...');
+    return;
+  }
+
+  resultsList.innerHTML = matchedFoods.map((key, index) => {
+    const food = foodDatabase[key];
+    return `
+      <div class="result-item">
+        <div class="result-checkbox">
           <input 
-            type="number" 
-            class="gram-input" 
-            value="${dish.defaultGram}" 
-            min="1"
-            placeholder="Gram"
-            data-index="${index}"
+            type="checkbox" 
+            id="dish-${index}" 
+            class="dish-checkbox"
+            data-food='${JSON.stringify(food)}'
+            checked
           />
-          <span class="gram-unit">g</span>
+          <label for="dish-${index}" class="checkbox-label">
+            <span class="checkmark">✓</span>
+          </label>
+        </div>
+        <div class="result-info">
+          <div class="result-name">
+            <strong>${food.code}</strong> - ${food.fullName}
+          </div>
+          <div class="result-gram-input">
+            <input 
+              type="number" 
+              class="gram-input" 
+              value="${food.defaultGram}" 
+              min="0.01"
+              step="0.01"
+              placeholder="Gram"
+              data-index="${index}"
+            />
+            <span class="gram-unit">g</span>
+          </div>
         </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   resultsContainer.style.display = 'block';
 
-  // Auto focus first checkbox
   setTimeout(() => {
-    const firstCheckbox = resultsList.querySelector('.dish-checkbox');
-    if (firstCheckbox) firstCheckbox.focus();
+    const firstGramInput = resultsList.querySelector('.gram-input');
+    if (firstGramInput) {
+      firstGramInput.select();
+    }
   }, 100);
 }
 
-// Toggle select all
 function toggleSelectAll() {
   const checkboxes = document.querySelectorAll('.dish-checkbox');
   const allChecked = Array.from(checkboxes).every(cb => cb.checked);
@@ -249,81 +239,338 @@ function toggleSelectAll() {
   btn.textContent = allChecked ? 'Chọn tất cả' : 'Bỏ chọn tất cả';
 }
 
-// Add selected dishes
 function addSelectedDishes() {
   const checkboxes = document.querySelectorAll('.dish-checkbox:checked');
   
   if (checkboxes.length === 0) {
-    alert('Vui lòng chọn ít nhất 1 món!');
+    alert('Vui lòng chọn ít nhất 1 thực phẩm!');
     return;
   }
 
-  const selectedDishes = [];
+  const selectedFoods = [];
   checkboxes.forEach(checkbox => {
-    const dish = JSON.parse(checkbox.dataset.dish);
+    const food = JSON.parse(checkbox.dataset.food);
     const index = checkbox.id.replace('dish-', '');
     const gramInput = document.querySelector(`.gram-input[data-index="${index}"]`);
-    const gram = parseInt(gramInput.value) || dish.defaultGram;
+    const gram = parseFloat(gramInput.value) || food.defaultGram;
     
-    selectedDishes.push({
-      name: dish.name,
+    selectedFoods.push({
+      code: food.code,
+      fullName: food.fullName,
       gram: gram
     });
   });
 
-  // Hiển thị thông báo
-  const message = selectedDishes.map(d => `✓ ${d.name} (${d.gram}g)`).join('\n');
+  console.log(`🚀 Bắt đầu thêm ${selectedFoods.length} thực phẩm...`);
   
-  if (confirm(`Thêm ${selectedDishes.length} món vào thực đơn?\n\n${message}`)) {
-    // TODO: Tích hợp với hệ thống thực tế
-    addDishesToMenu(selectedDishes);
+  addFoodsToMenu(selectedFoods);
+  
+  document.querySelector('.results-container').style.display = 'none';
+  document.querySelector('.food-code-input').value = '';
+  
+  showProgressNotification(`Đang thêm ${selectedFoods.length} thực phẩm...`);
+}
+
+function addFoodsToMenu(foods) {
+  console.log('🍽️ Bắt đầu thêm thực phẩm:', foods);
+  
+  let currentIndex = 0;
+  
+  function closePopupIfExists() {
+    const popupClose = document.querySelector('.ant-notification-close, .ant-modal-close, .swal2-close');
+    if (popupClose) {
+      console.log('🔴 Đóng popup...');
+      popupClose.click();
+    }
     
-    // Reset
-    document.querySelector('.results-container').style.display = 'none';
-    document.querySelector('.food-code-input').value = '';
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true }));
+  }
+  
+  function scrollToInput() {
+    const foodInput = document.querySelector('.ant-select-auto-complete input[type="search"]');
+    if (foodInput) {
+      foodInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+  
+  function addSingleFood() {
+    if (currentIndex >= foods.length) {
+      console.log('✅ Hoàn thành thêm tất cả thực phẩm!');
+      showSuccessNotification(`✓ Đã thêm ${foods.length} thực phẩm!`);
+      return;
+    }
     
-    showSuccessNotification(`Đã thêm ${selectedDishes.length} món!`);
+    const food = foods[currentIndex];
+    console.log(`\n📝 [${currentIndex + 1}/${foods.length}] Thêm: ${food.code} (${food.gram}g)`);
+    
+    closePopupIfExists();
+    
+    setTimeout(() => {
+      const foodInput = document.querySelector('.ant-select-auto-complete input[type="search"]');
+      
+      if (!foodInput) {
+        console.error('❌ Không tìm thấy input, thử lại...');
+        setTimeout(addSingleFood, 500);
+        return;
+      }
+      
+      scrollToInput();
+      
+      foodInput.focus();
+      foodInput.value = '';
+      foodInput.dispatchEvent(new Event('input', { bubbles: true }));
+      
+      setTimeout(() => {
+        foodInput.value = food.code;
+        foodInput.dispatchEvent(new Event('input', { bubbles: true }));
+        foodInput.dispatchEvent(new Event('change', { bubbles: true }));
+        
+        setTimeout(() => {
+          const options = document.querySelectorAll('.ant-select-item-option');
+          
+          const matchedOption = Array.from(options).find(opt => {
+            const hasRedBadge = opt.querySelector('.ant-tag-red, [style*="red"], .tpt-badge');
+            const text = opt.textContent.toUpperCase();
+            return hasRedBadge && text.includes(food.code.toUpperCase());
+          });
+          
+          const fallbackOption = !matchedOption ? Array.from(options).find(opt => {
+            const text = opt.textContent.toUpperCase();
+            return text.includes(food.code.toUpperCase());
+          }) : null;
+          
+          const selectedOption = matchedOption || fallbackOption;
+          
+          if (selectedOption) {
+            console.log(`  → Chọn: ${selectedOption.textContent.trim()}`);
+            selectedOption.click();
+            
+            setTimeout(() => {
+              const allInputs = document.querySelectorAll('.food-list input[type="text"], .food-list input[type="number"]');
+              if (allInputs.length > 0) {
+                const lastInput = allInputs[allInputs.length - 1];
+                lastInput.focus();
+                lastInput.value = food.gram;
+                lastInput.dispatchEvent(new Event('input', { bubbles: true }));
+                lastInput.dispatchEvent(new Event('change', { bubbles: true }));
+                lastInput.blur();
+                
+                console.log(`  ✓ Thành công!`);
+                
+                const progress = Math.round(((currentIndex + 1) / foods.length) * 100);
+                showProgressNotification(`Đang thêm... ${progress}% (${currentIndex + 1}/${foods.length})`);
+                
+                currentIndex++;
+                setTimeout(addSingleFood, 2500);
+              } else {
+                console.error(`  ❌ Không tìm thấy input gram`);
+                currentIndex++;
+                setTimeout(addSingleFood, 1000);
+              }
+            }, 500);
+          } else {
+            console.error(`  ❌ Không tìm thấy option: ${food.code}`);
+            currentIndex++;
+            setTimeout(addSingleFood, 1000);
+          }
+        }, 800);
+      }, 300);
+    }, 300);
+  }
+  
+  addSingleFood();
+}
+
+function showProgressNotification(message) {
+  let notification = document.querySelector('.progress-notification');
+  
+  if (!notification) {
+    notification = document.createElement('div');
+    notification.className = 'progress-notification';
+    document.body.appendChild(notification);
+  }
+  
+  notification.innerHTML = `
+    <div class="notification-icon">⏳</div>
+    <div class="notification-message">${message}</div>
+  `;
+  notification.classList.add('show');
+}
+
+function syncAllFoods() {
+  console.log('🔄 Đồng bộ thực phẩm từ Handsontable');
+  
+  // Đọc bảng Handsontable
+  const currentTable = scanHandsontable();
+  console.log('📊 Bảng hiện tại:', currentTable);
+  
+  // So sánh với database
+  const databaseCodes = Object.keys(foodDatabase);
+  const currentCodes = currentTable.map(item => item.code);
+  
+  // Tìm món cần XÓA (có trong bảng nhưng KHÔNG có trong database)
+  const toDelete = [];
+  currentTable.forEach(item => {
+    if (!databaseCodes.includes(item.code)) {
+      toDelete.push(item);
+    }
+  });
+  
+  // Tìm món cần CẬP NHẬT "SL (g)"
+  const toUpdate = [];
+  currentTable.forEach(item => {
+    if (databaseCodes.includes(item.code)) {
+      const food = foodDatabase[item.code];
+      if (item.gram !== food.defaultGram) {
+        toUpdate.push({
+          code: item.code,
+          row: item.row,
+          rowIndex: item.rowIndex,
+          newGram: food.defaultGram,
+          currentGram: item.gram
+        });
+      }
+    }
+  });
+  
+  // Tìm món cần THÊM MỚI (có trong database nhưng KHÔNG có trong bảng)
+  const toAdd = [];
+  databaseCodes.forEach(code => {
+    if (!currentCodes.includes(code)) {
+      const food = foodDatabase[code];
+      toAdd.push({
+        code: food.code,
+        fullName: food.fullName,
+        gram: food.defaultGram
+      });
+    }
+  });
+  
+  console.log(`\n📋 Kế hoạch:`);
+  console.log(`  ❌ Xóa: ${toDelete.length} món`);
+  console.log(`  ✏️ Cập nhật SL (g): ${toUpdate.length} món`);
+  console.log(`  ➕ Thêm mới: ${toAdd.length} món`);
+  
+  const container = document.querySelector('.auto-fill-enhanced');
+  if (container) {
+    container.style.display = 'none';
+  }
+  
+  // Bước 1: XÓA món không cần
+  if (toDelete.length > 0) {
+    showProgressNotification(`Đang xóa ${toDelete.length} món...`);
+    deleteHandsontableRows(toDelete, () => {
+      // Bước 2: CẬP NHẬT SL (g)
+      if (toUpdate.length > 0) {
+        showProgressNotification(`Đang cập nhật ${toUpdate.length} món...`);
+        updateHandsontableRows(toUpdate, () => {
+          // Bước 3: THÊM món mới
+          if (toAdd.length > 0) {
+            showProgressNotification(`Đang thêm ${toAdd.length} món mới...`);
+            addFoodsToMenu(toAdd);
+          } else {
+            showSuccessNotification('✓ Đồng bộ hoàn tất!');
+          }
+        });
+      } else if (toAdd.length > 0) {
+        showProgressNotification(`Đang thêm ${toAdd.length} món mới...`);
+        addFoodsToMenu(toAdd);
+      } else {
+        showSuccessNotification('✓ Đồng bộ hoàn tất!');
+      }
+    });
+  } else if (toUpdate.length > 0) {
+    showProgressNotification(`Đang cập nhật ${toUpdate.length} món...`);
+    updateHandsontableRows(toUpdate, () => {
+      if (toAdd.length > 0) {
+        showProgressNotification(`Đang thêm ${toAdd.length} món mới...`);
+        addFoodsToMenu(toAdd);
+      } else {
+        showSuccessNotification('✓ Đồng bộ hoàn tất!');
+      }
+    });
+  } else if (toAdd.length > 0) {
+    showProgressNotification(`Đang thêm ${toAdd.length} món mới...`);
+    addFoodsToMenu(toAdd);
+  } else {
+    showSuccessNotification('✓ Dữ liệu đã đồng bộ!');
   }
 }
 
-// Add dishes to menu (tích hợp với hệ thống)
-function addDishesToMenu(dishes) {
-  // Tìm input thực phẩm trong trang
-  const foodInput = document.querySelector('.ant-select-auto-complete input');
+// Xóa các dòng trong Handsontable
+function deleteHandsontableRows(items, callback) {
+  console.log('\n❌ Xóa món không cần:');
   
-  dishes.forEach((dish, index) => {
-    setTimeout(() => {
-      if (foodInput) {
-        // Simulate typing
-        foodInput.value = dish.name;
-        foodInput.dispatchEvent(new Event('input', { bubbles: true }));
-        
-        // Simulate selection after delay
-        setTimeout(() => {
-          // Tìm và click vào option
-          const option = Array.from(document.querySelectorAll('.ant-select-item-option')).find(
-            opt => opt.textContent.includes(dish.name)
-          );
-          if (option) {
-            option.click();
-            
-            // Nhập số lượng gram
-            setTimeout(() => {
-              const gramInputs = document.querySelectorAll('input[type="text"]');
-              const lastGramInput = gramInputs[gramInputs.length - 1];
-              if (lastGramInput) {
-                lastGramInput.value = dish.gram;
-                lastGramInput.dispatchEvent(new Event('change', { bubbles: true }));
-              }
-            }, 300);
-          }
-        }, 500);
-      }
-    }, index * 1500); // Delay giữa các món
+  items.forEach(item => {
+    console.log(`  ❌ ${item.code}`);
+    
+    // Tìm nút xóa (icon trash)
+    const deleteBtn = item.row.querySelector('.glyphicon-trash');
+    if (deleteBtn) {
+      deleteBtn.click();
+    }
   });
+  
+  console.log('✅ Xóa xong!');
+  setTimeout(callback, 1000);
 }
 
-// Show success notification
+// Quét bảng Handsontable
+function scanHandsontable() {
+  const rows = document.querySelectorAll('#hot table.htCore tbody tr');
+  const foods = [];
+  
+  rows.forEach((row, index) => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length >= 4) {
+      // Cột 1: Tên viết tắt (index 1)
+      const codeCell = cells[1];
+      const code = codeCell ? codeCell.textContent.trim().toUpperCase() : '';
+      
+      // Cột 3: SL (g) (index 3)
+      const gramCell = cells[3];
+      const gram = gramCell ? parseFloat(gramCell.textContent.trim()) : 0;
+      
+      if (code && code !== 'TÊN VIẾT TẮT') {
+        foods.push({
+          code: code,
+          gram: gram,
+          row: row,
+          rowIndex: index
+        });
+      }
+    }
+  });
+  
+  return foods;
+}
+
+// Cập nhật "SL (g)" trong Handsontable
+function updateHandsontableRows(items, callback) {
+  console.log('\n✏️ Cập nhật SL (g):');
+  
+  items.forEach(item => {
+    console.log(`  ${item.code}: ${item.currentGram} → ${item.newGram}`);
+    
+    // Tìm cell "SL (g)" (cột 3)
+    const cells = item.row.querySelectorAll('td');
+    if (cells.length >= 4) {
+      const gramCell = cells[3];
+      
+      // Cập nhật giá trị
+      gramCell.textContent = item.newGram;
+      gramCell.classList.add('htNumeric', 'htRight');
+      
+      // Trigger event để Handsontable cập nhật
+      const event = new Event('change', { bubbles: true });
+      gramCell.dispatchEvent(event);
+    }
+  });
+  
+  console.log('✅ Cập nhật xong!');
+  setTimeout(callback, 500);
+}
+
 function showSuccessNotification(message) {
   const notification = document.createElement('div');
   notification.className = 'success-notification';
@@ -343,23 +590,43 @@ function showSuccessNotification(message) {
   }, 3000);
 }
 
-// Initialize
-function init() {
-  // Chỉ chạy trên trang thực đơn
-  if (window.location.href.includes('foodkid') || window.location.href.includes('thucDon')) {
+// Lắng nghe message từ popup để cập nhật database
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'update_database') {
+    console.log('📥 Nhận database mới từ popup:', request.database);
+    
+    // Cập nhật foodDatabase
+    Object.keys(foodDatabase).forEach(key => delete foodDatabase[key]);
+    Object.assign(foodDatabase, request.database);
+    
+    console.log(`✓ Đã cập nhật database: ${Object.keys(foodDatabase).length} món`);
+    
+    // Cập nhật UI
+    const container = document.querySelector('.auto-fill-enhanced');
+    if (container) {
+      container.remove();
+    }
     createEnhancedAutoFillUI();
-    console.log('✓ Auto Fill Enhanced đã được kích hoạt!');
+    
+    sendResponse({ status: 'success', count: Object.keys(foodDatabase).length });
+    return true;
   }
+});
+
+function init() {
+  console.log('🔍 Extension đang chạy...');
+  console.log('📍 URL hiện tại:', window.location.href);
+  
+  createEnhancedAutoFillUI();
+  console.log('✓ Auto Fill Enhanced đã được kích hoạt!');
 }
 
-// Run when page loads
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
   init();
 }
 
-// Re-init on navigation (SPA)
 let lastUrl = location.href;
 new MutationObserver(() => {
   const url = location.href;
